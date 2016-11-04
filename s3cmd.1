@@ -112,6 +112,9 @@ Set or delete expiration rule for the bucket
 s3cmd \fBsetlifecycle\fR \fIFILE s3://BUCKET\fR
 Upload a lifecycle policy for the bucket
 .TP
+s3cmd \fBgetlifecycle\fR \fIs3://BUCKET\fR
+Get a lifecycle policy for the bucket
+.TP
 s3cmd \fBdellifecycle\fR \fIs3://BUCKET\fR
 Remove a lifecycle policy for the bucket
 
@@ -181,6 +184,9 @@ AWS Access Key
 .TP
 \fB\-\-secret_key\fR=SECRET_KEY
 AWS Secret Key
+.TP
+\fB\-\-access_token\fR=ACCESS_TOKEN
+AWS Access Token
 .TP
 \fB\-n\fR, \fB\-\-dry\-run\fR
 Only show what should be uploaded or downloaded but
@@ -276,6 +282,10 @@ Perform deletes after new uploads [sync]
 .TP
 \fB\-\-max\-delete\fR=NUM
 Do not delete more than NUM files. [del] and [sync]
+.TP
+\fB\-\-limit\fR=NUM
+Limit number of objects returned in the response body
+(only for [ls] and [la] commands)
 .TP
 \fB\-\-add\-destination\fR=ADDITIONAL_DESTINATIONS
 Additional destination for parallel uploads, in
@@ -467,12 +477,15 @@ Enable given CloudFront distribution (only for
 [cfmodify] command)
 .TP
 \fB\-\-disable\fR
-Disable given CloudFront distribution (only for
+Enable given CloudFront distribution (only for
 [cfmodify] command)
 .TP
 \fB\-\-cf\-invalidate\fR
 Invalidate the uploaded filed in CloudFront. Also see
 [cfinval] command.
+.TP
+\fB\-\-cf\-invalidate\-manual\fR
+Export JSON file of necessary CloudFront invalidations
 .TP
 \fB\-\-cf\-invalidate\-default\-index\fR
 When using Custom Origin and S3 static website,
@@ -508,7 +521,7 @@ Enable verbose output.
 Enable debug output.
 .TP
 \fB\-\-version\fR
-Show s3cmd version (1.6.1) and exit.
+Show s3cmd version (1.6.2) and exit.
 .TP
 \fB\-F\fR, \fB\-\-follow\-symlinks\fR
 Follow symbolic links as if they are regular files

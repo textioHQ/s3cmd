@@ -39,6 +39,8 @@ import htmlentitydefs
 import socket
 import shutil
 import tempfile
+import json
+import uuid
 
 from copy import copy
 from optparse import OptionParser, Option, OptionValueError, IndentedHelpFormatter
@@ -1757,11 +1759,24 @@ def cmd_sync_local2remote(args):
               if len(default_index_file) < 1:
                   default_index_file = None
 
-        results = cf.InvalidateObjects(destination_base_uri, uploaded_objects_list, default_index_file, cfg.invalidate_default_index_on_cf, cfg.invalidate_default_index_root_on_cf)
-        for result in results:
-            if result['status'] == 201:
-                output(u"Created invalidation request for %d paths" % len(uploaded_objects_list))
-                output(u"Check progress with: s3cmd cfinvalinfo cf://%s/%s" % (result['dist_id'], result['request_id']))
+        if cfg.invalidate_on_cf_manual:
+            # Add leading slash
+            uploaded_objects_formatted = ["/" + f for f in uploaded_objects_list]
+            cf_data = {
+                "Paths": {
+                    "Quantity": len(uploaded_objects_formatted),
+                    "Items": uploaded_objects_formatted
+                },
+                "CallerReference": str(uuid.uuid4())
+            }
+            with open('changed-files.json', 'w+') as outfile:
+                json.dump(cf_data, outfile)
+        else:
+            results = cf.InvalidateObjects(destination_base_uri, uploaded_objects_list, default_index_file, cfg.invalidate_default_index_on_cf, cfg.invalidate_default_index_root_on_cf)
+            for result in results:
+                if result['status'] == 201:
+                    output(u"Created invalidation request for %d paths" % len(uploaded_objects_list))
+                    output(u"Check progress with: s3cmd cfinvalinfo cf://%s/%s" % (result['dist_id'], result['request_id']))
 
     # main execution
     s3 = S3(cfg)
@@ -2624,6 +2639,7 @@ def main():
     optparser.add_option(      "--enable", dest="enable", action="store_true", help="Enable given CloudFront distribution (only for [cfmodify] command)")
     optparser.add_option(      "--disable", dest="enable", action="store_false", help="Enable given CloudFront distribution (only for [cfmodify] command)")
     optparser.add_option(      "--cf-invalidate", dest="invalidate_on_cf", action="store_true", help="Invalidate the uploaded filed in CloudFront. Also see [cfinval] command.")
+    optparser.add_option(      "--cf-invalidate-manual", dest="invalidate_on_cf_manual", action="store_true", help="Export JSON file of necessary CloudFront invalidations")
     # joseprio: adding options to invalidate the default index and the default
     # index root
     optparser.add_option(      "--cf-invalidate-default-index", dest="invalidate_default_index_on_cf", action="store_true", help="When using Custom Origin and S3 static website, invalidate the default index file.")

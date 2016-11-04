@@ -112,6 +112,7 @@ class Config(object):
     follow_symlinks = False
     socket_timeout = 300
     invalidate_on_cf = False
+    invalidate_on_cf_manual = False
     # joseprio: new flags for default index invalidation
     invalidate_default_index_on_cf = False
     invalidate_default_index_root_on_cf = True

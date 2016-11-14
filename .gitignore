@@ -7,3 +7,5 @@ testsuite-out
 build/*
 s3cmd.spec
 .idea
+*.egg-info
+.python-version

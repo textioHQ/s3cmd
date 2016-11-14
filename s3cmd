@@ -1755,17 +1755,32 @@ def cmd_sync_local2remote(args):
         if cfg.invalidate_default_index_on_cf or cfg.invalidate_default_index_root_on_cf:
             info_response = s3.website_info(destination_base_uri, cfg.bucket_location)
             if info_response:
-              default_index_file = info_response['index_document']
-              if len(default_index_file) < 1:
-                  default_index_file = None
+                default_index_file = info_response['index_document']
+                if len(default_index_file) < 1:
+                    default_index_file = None
 
         if cfg.invalidate_on_cf_manual:
-            # Add leading slash
-            uploaded_objects_formatted = ["/" + f for f in uploaded_objects_list]
+            # Support for the invalidate-default-index-on-cf flag
+            paths = uploaded_objects_list
+            if default_index_file is not None and (not cfg.invalidate_default_index_on_cf or cfg.invalidate_default_index_root_on_cf):
+                new_paths = []
+                default_index_suffix = '/' + default_index_file
+                for path in uploaded_objects_list:
+                    if path.endswith(default_index_suffix) or path == default_index_file:
+                        if cfg.invalidate_default_index_on_cf:
+                            new_paths.append(path)
+                        if cfg.invalidate_default_index_root_on_cf:
+                            new_paths.append(path[:-len(default_index_file)])
+                    else:
+                        new_paths.append(path)
+                paths = ["/" + f for f in new_paths]
+            else:
+                paths = ["/" + f for f in uploaded_objects_list]
+
             cf_data = {
                 "Paths": {
-                    "Quantity": len(uploaded_objects_formatted),
-                    "Items": uploaded_objects_formatted
+                    "Quantity": len(paths),
+                    "Items": paths
                 },
                 "CallerReference": str(uuid.uuid4())
             }

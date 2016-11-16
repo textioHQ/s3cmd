@@ -12,6 +12,22 @@ S3tools / S3cmd mailing lists:
 * General questions and discussion: s3tools-general@lists.sourceforge.net
 * Bug reports: s3tools-bugs@lists.sourceforge.net
 
+### Textio: Building the custom fork of s3cmd
+
+We forked `s3cmd` so we could leverage it for file sync and change tracking, but handle CloudFront invalidations on our own vs. relying on the automagical Bucket<>CloudFront mapping that `s3cmd` uses. We don't expect to touch this code often, but if we do and need to rebuild, here are the steps:
+
+1. Setup a Python2 virtualenv with `pyenv local 2.7.10` + `makevirtualenv s3cmd`
+1. `pip install python-dateutil`
+1. Make your changes to the code...
+1. (optional) Update version in S3/PkgInfo.py
+1. `./s3cmd --help | ./format-manpage.pl > s3cmd.1`
+1. `python setup.py sdist`
+1. You should now have a tarball in the `dist/` folder called something like `s3cmd-1.6.2.tar.gz`.
+1. Rename tarball to `s3cmd-textio-1.6.2.tar.gz` so we know this is a custom `s3cmd`. Note that if you don't want to overwrite the current version, the recommended way is to increment the version which will change the name of the tarball.
+1. Upload renamed tarball to the appropriate s3 bucket (see frontend deploy scripts for pointers).
+1. If necessary, update the frontend deploy scripts to reference the new tarball 
+
+
 ### What is S3cmd
 
 S3cmd (`s3cmd`) is a free command line tool and client for uploading, retrieving and managing data in Amazon S3 and other cloud storage service providers that use the S3 protocol, such as Google Cloud Storage or DreamHost DreamObjects. It is best suited for power users who are familiar with command line programs. It is also ideal for batch scripts and automated backup to S3, triggered from cron, etc.
@@ -340,4 +356,3 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
